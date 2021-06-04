@@ -1,0 +1,6 @@
+bouton 1 = 14
+bouton 2 = 13
+bouton 3 = 11
+bouton 4 = 7
+
+non appui = 15
