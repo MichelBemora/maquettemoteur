@@ -16,7 +16,7 @@ LiquidCrystal_I2C lcd(0x27,20,4);
 Rotary r = Rotary(PINA, PINB, PUSHB);        // there is no must for using interrupt pins !!
  
 int columnsLCD = 16;
-char* MenuLine[] = {" Injection", " Allumage", " Donnees", " Puissance", " Frein", " Option 6", " Option 7"};
+char* MenuLine[] = {" Vitesse", " Temp/Puiss", " Injection", " Allumage", " Mode prof", " Reset", " .."};
 int MenuItems = 7;
 int CursorLine = 0;
  
@@ -41,9 +41,9 @@ void setup ()
   lcd.init();                      // initialize the lcd &&cs
   lcd.init();
   lcd.backlight();
-  lcd.print ("Menu Master");
+  lcd.print ("Maquette moteur");
   lcd.setCursor(0, 1);
-  lcd.print("Please Select");
+  lcd.print("Appuyez pour valider");
   delay(2000);
   startMillis = millis();  //initial start time
   print_menu();
@@ -96,28 +96,40 @@ void selection()
 {
   switch (CursorLine) {
     case 0:
-      lcd.print("Injection    ");
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Vitesse :    ");
+      lcd.setCursor(0, 1);
+      lcd.print("Ang Papillon :    ");
       //set a flag or do something....
       break;
     case 1:
-      lcd.print("Allumage    ");
-      //set a flag or do something....
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Temperature :    ");
+      lcd.setCursor(0, 1);
+      lcd.print("Puissance :    ");
       break;
     case 2:
-      lcd.print("Donnees    ");
-      //set a flag or do something....
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Injection utile :    ");
       break;
     case 3:
-      lcd.print("Option 4    ");
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Avance Allumage :    ");
       //set a flag or do something....
       break;
     case 4:
-      lcd.print("Option 5    ");
-      //set a flag or do something....
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Mode prof active :    ");
       break;
     case 5:
-      lcd.print("Option 6    ");
-      //set a flag or do something....
+      lcd.clear();
+      lcd.setCursor(0, 2);
+      lcd.print("Reset complete     ");
       break;
     case 6:
       lcd.setCursor(0, 1);
