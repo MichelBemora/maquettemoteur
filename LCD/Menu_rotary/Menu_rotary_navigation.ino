@@ -19,6 +19,7 @@ int columnsLCD = 16;
 char* MenuLine[] = {" Vitesse", " Temp/Puiss", " Injection", " Allumage", " Mode prof", " Reset", " .."};
 int MenuItems = 7;
 int CursorLine = 0;
+int check_CursorLine = 0;
  
 int backlightPin = 10;   //PWM pin
 int brightness = 255;
@@ -26,10 +27,23 @@ int fadeAmount = 5;
  
 unsigned long startMillis;
 unsigned long currentMillis;
-const unsigned long period = 10000;  //the value is a number of milliseconds
- 
+unsigned long refreshMillis;
+const unsigned long period = 60000;  //the value is a number of milliseconds
+const unsigned int refresh_delay = 1000;
+
+const int buttonPin = 12; 
+int buttonState = 0; 
+
+boolean main_menu;
+bool menu_refresh;
+
+
+unsigned int rpm;
+unsigned int angle_papillon;
+
 void setup ()
 {
+  pinMode(buttonPin, INPUT);
   digitalWrite (PINA, HIGH);     // enable pull-ups
   digitalWrite (PINB, HIGH);
   digitalWrite (PUSHB, HIGH);
@@ -44,15 +58,25 @@ void setup ()
   lcd.print ("Maquette moteur");
   lcd.setCursor(0, 1);
   lcd.print("Appuyez pour valider");
-  delay(2000);
-  startMillis = millis();  //initial start time
-  print_menu();
+  
+  if (buttonState == LOW) {
+    main_menu = true;
+    menu_refresh = 0;
+    rpm = 5000;
+    angle_papillon = 25;
+    startMillis = millis();  //initial start time
+  }
 } //End of setup
  
 void loop ()
 {
+  buttonState = digitalRead(buttonPin);
+  rpm = rpm + 6;
+  
   volatile unsigned char result = r.process();
   currentMillis = millis();  //get the current "time" (actually the number of milliseconds since the program started)
+  
+  
   if (currentMillis - startMillis >= period)  //test whether the period has elapsed
   {
     LCDfadeOut();      //set LCD to sleep...
@@ -66,17 +90,49 @@ void loop ()
     }
     print_menu();
   } //End if result
- 
-  if (r.buttonPressedReleased(25)) {
+
+  
+  
+  if (buttonState == LOW) {
     init_backlight();     //wake up LCD...
     lcd.setCursor(0, 0);  //(col, row)
     lcd.print("ITEM");
     lcd.setCursor(0, 1);  //(col, row)
-    selection();
-    print_menu();
+
+    check_CursorLine = CursorLine;
     
-    
+    if (main_menu == false) {
+      main_menu = true;
+      menu_refresh = 0;
+      print_menu();
+      delay(1000);
+    }
+    else if (main_menu == true) {
+      main_menu = false;
+      menu_refresh = 1;
+      selection();
+      delay(1000);
+    }
+
+
   } //endif buttonPressedReleased
+
+  if (menu_refresh == 1) {
+    if (currentMillis - refreshMillis >= refresh_delay) {
+      refreshMillis = millis();
+      variable_selection();
+
+      if (CursorLine != check_CursorLine) {
+        print_menu();
+        check_CursorLine = CursorLine;
+        main_menu = true;
+        menu_refresh = 0;
+      }
+      
+    }
+  }
+  
+  
 } //End loop()
  
 /************FUNCTIONS**************/
@@ -98,9 +154,11 @@ void selection()
     case 0:
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("Vitesse :    ");
+      lcd.print("Vitesse: ");
+      lcd.print(rpm);
       lcd.setCursor(0, 1);
-      lcd.print("Ang Papillon :    ");
+      lcd.print("Ang Papillon: ");
+      lcd.print(angle_papillon);
       //set a flag or do something....
       break;
     case 1:
@@ -142,10 +200,26 @@ void selection()
       break;
   } //end switch
  
-  delay(2000);
-  CursorLine = 0;     // reset to start position
+  //delay(2000);
+  //CursorLine = 0;     // reset to start position
 } //End selection
- 
+
+
+void variable_selection(){
+  
+  switch (CursorLine) {
+    case 0:
+      lcd.setCursor(9, 0);
+      lcd.print(rpm);
+  
+      lcd.setCursor(14, 1);
+      lcd.print(angle_papillon);
+      break;
+  }
+
+  
+}
+
 void LCDfadeOut()
 {
   while (brightness > 0) {
@@ -155,6 +229,7 @@ void LCDfadeOut()
   } //End while
   digitalWrite(backlightPin, LOW);
   lcd.clear();
+  
 } //End LCDfadeOut
  
 void init_backlight()
