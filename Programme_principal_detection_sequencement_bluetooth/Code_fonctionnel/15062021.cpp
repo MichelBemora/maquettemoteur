@@ -18,7 +18,8 @@ unsigned int value_modif_AA;
 //Potentiomètre
 unsigned int pMin = 2793;
 unsigned int pMax = 4096;
-unsigned int angle_papillon = 0;
+unsigned int angle_papillon_analog = 0;
+unsigned int angle_papillon_map;
 boolean modif_pMin = false;
 boolean modif_pMax = false;
 unsigned int value_modif_pMin;
@@ -325,18 +326,12 @@ void loop() {
 
 
 
-  //========================= Potentiomètre (angle papillon) =========================//
-  //Lecture de la valeur numérique
-  angle_papillon = analogRead(39);
-
-  //Stockage d'une plage de valeur numérique entre 0 et 100% 
-  angle_papillon = map(angle_papillon, pMin, pMax, 0, 100);
   
 
   //========================= Condition entre valeur par défaut et valeur modifiée =========================//
   //Condition injection
   if (modif_injection == false) {
-    T_injection_utile = recup_injection(angle_papillon, rpm);
+    T_injection_utile = recup_injection(angle_papillon_map, rpm);
   }
   else {
     T_injection_utile = value_modif_injection;
@@ -344,7 +339,7 @@ void loop() {
 
   //Condition avance à l'allumage
   if (modif_AA == false) {
-    T_avance_bobine = recup_allumage(angle_papillon, rpm);
+    T_avance_bobine = recup_allumage(angle_papillon_map, rpm);
   }
   else {
     T_avance_bobine = value_modif_AA;
@@ -366,6 +361,25 @@ void loop() {
     pMax = value_modif_pMax;
   }
 
+
+  //========================= Potentiomètre (angle papillon) =========================//
+  //Lecture de la valeur numérique
+  angle_papillon_analog = analogRead(39);
+
+  if (angle_papillon_analog < pMin) {
+    angle_papillon_map = 0;
+  }
+
+  else if (angle_papillon_analog > pMax) {
+    angle_papillon_map = 100;
+  }
+  
+  else {
+    //Stockage d'une plage de valeur numérique entre 0 et 100% 
+    angle_papillon_map = map(angle_papillon_analog, pMin, pMax, 0, 100);
+  }
+
+
   //Calcul de conversion de la valeur numérique en millivolt
   pMin_in_millivolt = (pMin * 3300) / 4096; //3300mV
   pMax_in_millivolt = (pMax * 3300) / 4096;
@@ -380,7 +394,7 @@ void loop() {
       SerialBT.print("|");
       SerialBT.print(temp); //température à compléter
       SerialBT.print("|");
-      SerialBT.print(angle_papillon); //angle_papillon à compléter
+      SerialBT.print(angle_papillon_map); //angle_papillon à compléter
       SerialBT.print("|");
       SerialBT.print(T_injection_utile);
       SerialBT.print("|");
@@ -393,8 +407,10 @@ void loop() {
     }
   
   
-  Serial.print("rpm  ");
-  Serial.println(rpm);
+  Serial.print("Angle papillon  ");
+  Serial.print(angle_papillon_map);
+  Serial.print("      ");
+  Serial.println(angle_papillon_analog);
 
   //Serial.println(cycle);
   
