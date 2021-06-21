@@ -1,3 +1,5 @@
+// Valeur que prennent les bouttons de l'OLIMEX 
+
 bouton 1 = 14
 bouton 2 = 13
 bouton 3 = 11
