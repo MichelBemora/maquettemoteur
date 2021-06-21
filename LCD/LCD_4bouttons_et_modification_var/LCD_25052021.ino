@@ -1,5 +1,7 @@
 #include <LCD16x2.h>
 #include <Wire.h>
+///////////// Attention code adapté pour le LCD OLIMEX 16x2
+
 int page = 1;
 boolean didMyOneTimeAction = false;
 
